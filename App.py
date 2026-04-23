@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 
-# 🎨 ESTILOS BONITOS
+# 🎨 ESTILOS
 st.markdown("""
 <style>
 .stApp {
@@ -16,23 +16,13 @@ st.markdown("""
 /* TITULOS */
 .title {
     text-align: center;
-    font-size: 40px;
+    font-size: 42px;
     color: #e0f2fe;
 }
 .subtitle {
     text-align: center;
     color: #94a3b8;
     margin-bottom: 30px;
-}
-
-/* CARD */
-.card {
-    background: rgba(15, 23, 42, 0.75);
-    padding: 30px;
-    border-radius: 22px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    text-align: center;
 }
 
 /* BOTÓN */
@@ -51,16 +41,29 @@ st.markdown("""
     background: linear-gradient(135deg, #2563eb, #1e40af);
 }
 
-/* SLIDER */
-.stSlider label {
-    color: #93c5fd;
+/* CANVAS CENTRADO */
+canvas {
+    display: block;
+    margin: auto;
+    border-radius: 12px;
+}
+
+.element-container:has(canvas) {
+    display: flex;
+    justify-content: center;
+    background: transparent !important;
+}
+
+iframe {
+    background: transparent !important;
 }
 
 /* RESULTADO */
 .result {
-    font-size: 28px;
+    font-size: 30px;
     color: #38bdf8;
-    margin-top: 15px;
+    text-align: center;
+    margin-top: 20px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -73,7 +76,7 @@ def predictDigit(image):
     img = np.array(img, dtype='float32')
     img = img/255
     img = img.reshape((1,28,28,1))
-    pred= model.predict(img)
+    pred = model.predict(img)
     result = np.argmax(pred[0])
     return result
 
@@ -81,24 +84,24 @@ def predictDigit(image):
 st.markdown("<div class='title'>🔢 Reconocimiento de Dígitos</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle'>Dibuja un número y deja que la IA lo adivine 💙</div>", unsafe_allow_html=True)
 
-# 🧊 CARD
-st.markdown('<div class="card">', unsafe_allow_html=True)
-
-# SLIDER
+# 🎚️ SLIDER
 stroke_width = st.slider('🖌️ Ancho del trazo', 1, 30, 15)
 
-# CANVAS
-canvas_result = st_canvas(
-    fill_color="rgba(255, 165, 0, 0.2)",
-    stroke_width=stroke_width,
-    stroke_color='#FFFFFF',
-    background_color='#000000',
-    height=220,
-    width=220,
-    key="canvas",
-)
+# 🧊 CANVAS CENTRADO
+col1, col2, col3 = st.columns([1,2,1])
 
-# BOTÓN
+with col2:
+    canvas_result = st_canvas(
+        fill_color="rgba(255, 165, 0, 0.2)",
+        stroke_width=stroke_width,
+        stroke_color='#FFFFFF',
+        background_color='#000000',
+        height=220,
+        width=220,
+        key="canvas",
+    )
+
+# 🔘 BOTÓN
 if st.button('✨ Predecir'):
     if canvas_result.image_data is not None:
         input_numpy_array = np.array(canvas_result.image_data)
@@ -112,9 +115,7 @@ if st.button('✨ Predecir'):
     else:
         st.warning('⚠️ Dibuja un dígito primero')
 
-st.markdown('</div>', unsafe_allow_html=True)
-
-# SIDEBAR BONITA
+# 📌 SIDEBAR
 st.sidebar.markdown("### 💡 Acerca de")
 st.sidebar.write("Esta aplicación utiliza una red neuronal para reconocer dígitos escritos a mano.")
 st.sidebar.write("Dibuja un número en el panel y presiona *Predecir*.")
