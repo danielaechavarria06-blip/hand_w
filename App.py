@@ -1,65 +1,120 @@
 import tensorflow as tf
 from PIL import Image, ImageOps
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 
-# App
+# 🎨 ESTILOS BONITOS
+st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(180deg, #020617, #0c4a6e);
+    color: #e2e8f0;
+}
+
+/* TITULOS */
+.title {
+    text-align: center;
+    font-size: 40px;
+    color: #e0f2fe;
+}
+.subtitle {
+    text-align: center;
+    color: #94a3b8;
+    margin-bottom: 30px;
+}
+
+/* CARD */
+.card {
+    background: rgba(15, 23, 42, 0.75);
+    padding: 30px;
+    border-radius: 22px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    text-align: center;
+}
+
+/* BOTÓN */
+.stButton > button {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border-radius: 14px;
+    font-size: 18px;
+    padding: 10px 20px;
+    border: none;
+    transition: 0.3s;
+}
+
+.stButton > button:hover {
+    transform: scale(1.07);
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+}
+
+/* SLIDER */
+.stSlider label {
+    color: #93c5fd;
+}
+
+/* RESULTADO */
+.result {
+    font-size: 28px;
+    color: #38bdf8;
+    margin-top: 15px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# 🧠 FUNCIÓN (SIN CAMBIOS)
 def predictDigit(image):
     model = tf.keras.models.load_model("model/handwritten.h5")
     image = ImageOps.grayscale(image)
     img = image.resize((28,28))
     img = np.array(img, dtype='float32')
     img = img/255
-    plt.imshow(img)
-    plt.show()
     img = img.reshape((1,28,28,1))
     pred= model.predict(img)
     result = np.argmax(pred[0])
     return result
 
-# Streamlit 
-st.set_page_config(page_title='Reconocimiento de Dígitos escritos a mano', layout='wide')
-st.title('Reconocimiento de Dígitos escritos a mano')
-st.subheader("Dibuja el digito en el panel  y presiona  'Predecir'")
+# 🐋 HEADER
+st.markdown("<div class='title'>🔢 Reconocimiento de Dígitos</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>Dibuja un número y deja que la IA lo adivine 💙</div>", unsafe_allow_html=True)
 
-# Add canvas component
-# Specify canvas parameters in application
-drawing_mode = "freedraw"
-stroke_width = st.slider('Selecciona el ancho de línea', 1, 30, 15)
-stroke_color = '#FFFFFF' # Set background color to white
-bg_color = '#000000'
+# 🧊 CARD
+st.markdown('<div class="card">', unsafe_allow_html=True)
 
-# Create a canvas component
+# SLIDER
+stroke_width = st.slider('🖌️ Ancho del trazo', 1, 30, 15)
+
+# CANVAS
 canvas_result = st_canvas(
-    fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
+    fill_color="rgba(255, 165, 0, 0.2)",
     stroke_width=stroke_width,
-    stroke_color=stroke_color,
-    background_color=bg_color,
-    height=200,
-    width=200,
+    stroke_color='#FFFFFF',
+    background_color='#000000',
+    height=220,
+    width=220,
     key="canvas",
 )
 
-# Add "Predict Now" button
-if st.button('Predecir'):
+# BOTÓN
+if st.button('✨ Predecir'):
     if canvas_result.image_data is not None:
         input_numpy_array = np.array(canvas_result.image_data)
         input_image = Image.fromarray(input_numpy_array.astype('uint8'),'RGBA')
         input_image.save('prediction/img.png')
         img = Image.open("prediction/img.png")
-        res = predictDigit(img)
-        st.header('El Digito es : ' + str(res))
-    else:
-        st.header('Por favor dibuja en el canvas el digito.')
 
-# Add sidebar
-st.sidebar.title("Acerca de:")
-st.sidebar.text("En esta aplicación se evalua ")
-st.sidebar.text("la capacidad de un RNA de reconocer") 
-st.sidebar.text("digitos escritos a mano.")
-st.sidebar.text("Basado en desarrollo de Vinay Uniyal")
-#st.sidebar.text("GitHub Repository")
-#st.sidebar.write("[GitHub Repo Link](https://github.com/Vinay2022/Handwritten-Digit-Recognition)")
+        res = predictDigit(img)
+
+        st.markdown(f"<div class='result'>🔢 Resultado: {res}</div>", unsafe_allow_html=True)
+    else:
+        st.warning('⚠️ Dibuja un dígito primero')
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# SIDEBAR BONITA
+st.sidebar.markdown("### 💡 Acerca de")
+st.sidebar.write("Esta aplicación utiliza una red neuronal para reconocer dígitos escritos a mano.")
+st.sidebar.write("Dibuja un número en el panel y presiona *Predecir*.")
